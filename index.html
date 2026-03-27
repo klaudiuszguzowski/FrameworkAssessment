@@ -66,7 +66,7 @@ body{font-family:var(--fs);background:var(--bg);color:var(--tx);font-size:13px;l
 .crit-name{font-size:13px;font-weight:500;margin-bottom:3px;line-height:1.4}
 .crit-diss{font-size:11px;color:var(--t2);font-style:italic;margin-bottom:7px;line-height:1.5}
 .ev-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.ev-note{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px;background:var(--s2);font-size:11px;font-family:var(--fs);color:var(--t2);resize:vertical;min-height:44px;line-height:1.5;transition:border-color var(--tr)}
+.ev-note{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px;background:var(--s2);font-size:11px;font-family:var(--fs);color:var(--t2);resize:none;height:calc(4 * 1.5 * 11px + 14px);overflow-y:auto;line-height:1.5;transition:border-color var(--tr)}
 .ev-note:focus{outline:none;border-color:var(--bd2);background:var(--s1)}
 .sbwrap{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;min-width:115px}
 .sbrow{display:flex;gap:3px}
@@ -94,7 +94,7 @@ body{font-family:var(--fs);background:var(--bg);color:var(--tx);font-size:13px;l
 .dname{padding:9px 12px;font-weight:600;font-size:12px;background:var(--s1)}
 .sctd{padding:9px 12px;vertical-align:middle;background:var(--s1)}
 .note-cell{padding:5px 12px 9px;border-top:1px dashed var(--bd)}
-.cmp-note{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px;background:var(--s2);font-size:11px;font-family:var(--fs);color:var(--t2);resize:vertical;min-height:48px;line-height:1.5;transition:border-color var(--tr)}
+.cmp-note{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px;background:var(--s2);font-size:11px;font-family:var(--fs);color:var(--t2);resize:none;height:calc(4 * 1.5 * 11px + 14px);overflow-y:auto;line-height:1.5;transition:border-color var(--tr)}
 .cmp-note:focus{outline:none;border-color:var(--bd2);background:var(--s1)}
 .pill{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px}
 .p-els{background:#deeaf8;color:#1a5ea8}.p-acl{background:#f5e6df;color:#8b3a1a}.p-dcu{background:#daf0e8;color:#0d6649}
@@ -109,6 +109,11 @@ body{font-family:var(--fs);background:var(--bg);color:var(--tx);font-size:13px;l
 .hm tr:last-child td{border-bottom:none}
 .h1{background:#f5d8d8;color:#6b1818}.h2{background:#fce8c8;color:#5a3800}.h3{background:#edeae2;color:#3a3628}.h4{background:#d8e8f5;color:#0a2840}.h5{background:#c8eada;color:#042e1e}.hn{background:var(--s2);color:var(--t3);font-size:10px}
 @media(prefers-color-scheme:dark){.h1{background:#2e0f0f;color:#f0a0a0}.h2{background:#2e1a00;color:#f0c070}.h3{background:#282420;color:#c8c4b8}.h4{background:#0a1f38;color:#8ab8e8}.h5{background:#042e1e;color:#80d0a8}}
+/* Locked state (completed page) */
+.ev-note:read-only,.cmp-note:read-only{cursor:default;color:var(--t2)}
+.ev-note:read-only:focus,.cmp-note:read-only:focus{border-color:var(--bd);background:var(--s2)}
+.sb:disabled{cursor:default;opacity:1}
+.cbtn:disabled{cursor:default;pointer-events:none}
 </style>
 </head>
 <body>
@@ -224,6 +229,7 @@ const COMPLETED_SS={"sc":{"els":{"D1a":4,"D1b":2,"D1c":3,"D1d":2,"D1e":5,"D2a":3
 
 // State
 var S={cas:'els',open:{'D1':true},sc:{},nt:{},dn:{}};
+var currentPage='blank';
 
 function loadBlank(){
   Object.keys(CASES).forEach(function(cid){
@@ -309,6 +315,7 @@ function renderScore(){
   dc.querySelectorAll('.dim-hdr').forEach(function(h){h.addEventListener('click',function(){var did=h.dataset.did;S.open[did]=!S.open[did];renderScore();});});
   dc.querySelectorAll('.sb').forEach(function(b){b.addEventListener('click',function(){S.sc[b.dataset.cid][b.dataset.crit]=parseInt(b.dataset.val);renderScore();});});
   dc.querySelectorAll('.ev-note').forEach(function(ta){ta.addEventListener('input',function(){S.nt[ta.dataset.cid][ta.dataset.crit]=ta.value;});});
+  lockPage();
 }
 
 function renderCrits(cid,d){
@@ -366,6 +373,7 @@ function renderCompare(){
   th+='<tr class="tot-row"><td style="padding:9px 12px">Overall</td>'+cl.map(function(c,i){var o=ovSc(c.id);return'<td class="sctd"><span class="pill '+pc[i]+'">'+pct(o)+'</span></td>';}).join('')+'</tr></tbody>';
   document.getElementById('cmp-tbl').innerHTML=th;
   document.querySelectorAll('.cmp-note').forEach(function(ta){ta.addEventListener('input',function(){S.dn[ta.dataset.dim]=ta.value;});});
+  lockPage();
 }
 
 // Heatmap
@@ -403,8 +411,21 @@ document.getElementById('btn-share').addEventListener('click',function(){
   }catch(e){showMsg('Could not copy link');}
 });
 
+// Lock all inputs when on the completed page
+function lockPage(){
+  var locked=currentPage==='completed';
+  // Textareas
+  document.querySelectorAll('.ev-note,.cmp-note').forEach(function(ta){
+    if(locked){ta.setAttribute('readonly','');} else {ta.removeAttribute('readonly');}
+  });
+  // Score buttons — disable click but keep visual state
+  document.querySelectorAll('.sb').forEach(function(b){
+    if(locked){b.setAttribute('disabled','');} else {b.removeAttribute('disabled');}
+  });
+}
 // Router
 function switchPage(page){
+  currentPage=page;
   if(rC){rC.destroy();rC=null;}
   if(bC){bC.destroy();bC=null;}
   if(page==='blank'){loadBlank();}else{loadCompleted();}
