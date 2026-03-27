@@ -136,7 +136,7 @@ body{font-family:var(--fs);background:var(--bg);color:var(--tx);font-size:13px;l
     </div>
   </div>
   <div id="tb-right">
-    <button class="abtn" id="btn-share">Share scores</button>
+    <button class="abtn" id="btn-share">Export PDF</button>
     <button class="abtn pri" id="btn-save">Save &amp; download</button>
     <span class="msg" id="msg"></span>
   </div>
@@ -404,11 +404,96 @@ document.getElementById('btn-save').addEventListener('click',function(){
   showMsg('Saved');
 });
 document.getElementById('btn-share').addEventListener('click',function(){
-  try{
-    var p={sc:S.sc,dn:S.dn};
-    var url=location.href.split('#')[0]+'#s='+btoa(encodeURIComponent(JSON.stringify(p)));
-    navigator.clipboard.writeText(url).then(function(){showMsg('Link copied');});
-  }catch(e){showMsg('Could not copy link');}
+  var scoreColors={1:'#b83232',2:'#b87a18',3:'#8a8270',4:'#1a5ea8',5:'#0d6845'};
+  var scoreBg={1:'#f9eaea',2:'#fdf2e2',3:'#f0ede6',4:'#e4eef8',5:'#daf0e8'};
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Critical Design Framework — Score Export</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:11px;line-height:1.5;color:#16140f;background:#fff;padding:28px 32px}'
+    +'h1{font-family:Georgia,serif;font-size:17px;font-weight:600;margin-bottom:3px}'
+    +'.sub{font-size:10px;color:#9a9288;margin-bottom:24px}'
+    +'.case-block{margin-bottom:32px;page-break-inside:avoid}'
+    +'.case-title{font-family:Georgia,serif;font-size:13px;font-weight:600;padding:8px 12px;border-radius:6px 6px 0 0;border:1px solid #dedad2;border-bottom:2px solid currentColor}'
+    +'.dim-block{border:1px solid #dedad2;border-top:none;margin-bottom:0}'
+    +'.dim-block:last-child{border-radius:0 0 6px 6px}'
+    +'.dim-hdr{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#f0ede8;border-bottom:1px solid #dedad2}'
+    +'.dim-hdr-l{font-weight:600;font-size:11px}'
+    +'.dim-hdr-r{font-size:11px;font-weight:600}'
+    +'.crit-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;border-bottom:1px solid #edeae2;align-items:start}'
+    +'.crit-row:last-child{border-bottom:none}'
+    +'.crit-row:nth-child(even){background:#f8f7f4}'
+    +'.crit-id{font-size:9px;color:#9a9288;font-family:monospace;margin-bottom:1px}'
+    +'.crit-name{font-size:11px;font-weight:500;margin-bottom:2px}'
+    +'.crit-note{font-size:10px;color:#5c5850;margin-top:3px;white-space:pre-wrap}'
+    +'.score-badge{min-width:28px;text-align:center;padding:3px 8px;border-radius:5px;font-weight:700;font-size:12px;flex-shrink:0}'
+    +'.no-score{min-width:28px;text-align:center;padding:3px 8px;border-radius:5px;font-size:11px;color:#9a9288;background:#f0ede8;flex-shrink:0}'
+    +'.summary{margin-top:28px;border-collapse:collapse;width:100%;font-size:11px}'
+    +'.summary th{text-align:left;padding:7px 10px;border-bottom:2px solid #dedad2;font-size:9px;color:#9a9288;text-transform:uppercase;letter-spacing:.04em;background:#f0ede8}'
+    +'.summary td{padding:7px 10px;border-bottom:1px solid #edeae2}'
+    +'.summary tr:last-child td{border-bottom:none;font-weight:600;background:#e8e4dd}'
+    +'@media print{body{padding:16px 20px}}'
+    +'</style></head><body>'
+    +'<h1>Critical Design Framework Assessment</h1>'
+    +'<div class="sub">Sensory Design, Autonomy &amp; Inclusion &nbsp;&middot;&nbsp; Score export &nbsp;&middot;&nbsp; '+new Date().toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'})+'</div>';
+
+  Object.values(CASES).forEach(function(C){
+    html+='<div class="case-block">'
+      +'<div class="case-title" style="color:'+C.col+';border-color:'+C.col+'">'+C.name+' &nbsp;<span style="font-weight:400;font-size:10px;color:#5c5850">'+C.loc+' &middot; '+C.year+'</span></div>';
+
+    DIMS.forEach(function(d){
+      var dimSc=null;var sum=0;var n=0;
+      d.criteria.forEach(function(c){var v=S.sc[C.id][c.id];if(v){sum+=v;n++;}});
+      if(n)dimSc=Math.round(sum/(n*5)*100)+'%';
+
+      html+='<div class="dim-block">'
+        +'<div class="dim-hdr"><span class="dim-hdr-l">'+d.num+' — '+d.title+'</span>'
+        +'<span class="dim-hdr-r" style="color:'+(dimSc?'#1a5ea8':'#9a9288')+'">'+(dimSc||'—')+'</span></div>';
+
+      d.criteria.forEach(function(c){
+        var sc=S.sc[C.id][c.id];
+        var note=S.nt[C.id][c.id]||'';
+        var badge=sc
+          ?'<div class="score-badge" style="background:'+scoreBg[sc]+';color:'+scoreColors[sc]+'">'+sc+'</div>'
+          :'<div class="no-score">—</div>';
+        html+='<div class="crit-row"><div>'
+          +'<div class="crit-id">'+c.id+'</div>'
+          +'<div class="crit-name">'+c.name+'</div>'
+          +(note?'<div class="crit-note">'+note.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')
+          +'</div>'+badge+'</div>';
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+
+  // Summary table
+  html+='<table class="summary"><thead><tr><th>Dimension</th>';
+  Object.values(CASES).forEach(function(C){html+='<th style="color:'+C.col+'">'+C.short+'</th>';});
+  html+='</tr></thead><tbody>';
+  DIMS.forEach(function(d){
+    html+='<tr><td>'+d.id+' — '+d.title+'</td>';
+    Object.values(CASES).forEach(function(C){
+      var sum=0,n=0;
+      d.criteria.forEach(function(c){var v=S.sc[C.id][c.id];if(v){sum+=v;n++;}});
+      html+='<td>'+(n?Math.round(sum/(n*5)*100)+'%':'—')+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='<tr><td>Overall</td>';
+  Object.values(CASES).forEach(function(C){
+    var sum=0,n=0;
+    DIMS.forEach(function(d){d.criteria.forEach(function(c){var v=S.sc[C.id][c.id];if(v){sum+=v;n++;}});});
+    html+='<td>'+(n?Math.round(sum/(n*5)*100)+'%':'—')+'</td>';
+  });
+  html+='</tr></tbody></table>';
+  html+='</body></html>';
+
+  var win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload=function(){win.print();};
 });
 
 // Lock all inputs when on the completed page
