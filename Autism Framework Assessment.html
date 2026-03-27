@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Critical Design Framework Assessment</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8f7f4;--s1:#f0ede8;--s2:#e8e4dd;--s3:#dedad2;--tx:#16140f;--t2:#5c5850;--t3:#9a9288;--bd:#dedad2;--bd2:#c4bfb6;--r:6px;--r2:10px;--fs:-apple-system,'Helvetica Neue',Arial,sans-serif;--tr:.15s ease}
+@media(prefers-color-scheme:dark){:root{--bg:#141210;--s1:#1c1a17;--s2:#242118;--s3:#2c281f;--tx:#ede9e2;--t2:#9a9288;--t3:#5c5850;--bd:#2c281f;--bd2:#403c32}}
+body{font-family:var(--fs);background:var(--bg);color:var(--tx);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd);gap:10px;flex-wrap:wrap;background:var(--bg)}
+.tb-title{font-size:14px;font-weight:600;font-family:Georgia,serif}
+.tb-sub{font-size:10px;color:var(--t3);margin-top:1px}
+.tb-mid{display:flex;gap:2px;background:var(--s2);border-radius:20px;padding:3px}
+.tab{padding:5px 14px;border-radius:16px;border:none;background:transparent;color:var(--t2);cursor:pointer;font-size:12px;font-family:var(--fs);transition:var(--tr)}
+.tab:hover{color:var(--tx)}
+.tab.on{background:var(--bg);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tb-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.abtn{padding:5px 12px;border:1px solid var(--bd2);border-radius:var(--r);background:transparent;color:var(--t2);cursor:pointer;font-size:11px;font-family:var(--fs);transition:var(--tr)}
+.abtn:hover{background:var(--s1);color:var(--tx)}
+.abtn.pri{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.abtn.pri:hover{opacity:.85}
+.msg{font-size:11px;color:var(--t3);padding:0 4px}
+.shell{max-width:1060px;margin:0 auto;padding:18px 16px}
+.view{display:none}.view.on{display:block}
+.notice{border:1px solid var(--bd);border-left:3px solid var(--bd2);border-radius:0 var(--r) var(--r) 0;padding:10px 14px;margin-bottom:16px;font-size:11px;color:var(--t2);line-height:1.6}
+.case-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.cbtn{padding:7px 14px;border-radius:var(--r);border:1px solid var(--bd);cursor:pointer;font-size:12px;font-family:var(--fs);background:var(--bg);color:var(--t2);line-height:1.3;text-align:left;transition:var(--tr)}
+.cbtn:hover{border-color:var(--bd2);color:var(--tx)}
+.cbtn small{display:block;font-size:10px;opacity:.65;margin-top:1px}
+.on-els{background:#deeaf8;color:#1a5ea8;border-color:#1a5ea8}
+.on-acl{background:#f5e6df;color:#8b3a1a;border-color:#8b3a1a}
+.on-dcu{background:#daf0e8;color:#0d6649;border-color:#0d6649}
+.prof-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:16px}
+.pc{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:9px 11px}
+.pc-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.pc-val{font-size:20px;font-family:Georgia,serif;line-height:1}
+.pc-track{height:3px;background:var(--s3);border-radius:2px;margin-top:6px;overflow:hidden}
+.pc-fill{height:100%;border-radius:2px;transition:width .4s}
+.dim{border:1px solid var(--bd);border-radius:var(--r2);margin-bottom:8px;overflow:hidden}
+.dim-hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:11px 15px;cursor:pointer;background:var(--s1);gap:12px;transition:background var(--tr)}
+.dim-hdr:hover{background:var(--s2)}
+.dim-hdr-l{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0}
+.badge{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px}
+.dim-ttl{font-size:13px;font-weight:600;line-height:1.3}
+.dim-arg{font-size:11px;color:var(--t3);font-style:italic;margin-top:3px;line-height:1.5}
+.dim-hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0;padding-top:2px}
+.dtrack{width:48px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.dfill{height:100%;border-radius:2px}
+.dim-pct{font-size:12px;font-weight:600;min-width:30px;text-align:right}
+.chev{font-size:9px;color:var(--t3);transition:transform .2s;display:inline-block}
+.chev.op{transform:rotate(180deg)}
+.dim-body{display:none;border-top:1px solid var(--bd)}
+.dim-body.op{display:block}
+.crit{padding:11px 15px;border-bottom:1px solid var(--bd);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.crit:last-child{border-bottom:none}
+.crit:nth-child(even){background:var(--s1)}
+.crit-id{font-size:10px;color:var(--t3);font-family:monospace;letter-spacing:.03em;margin-bottom:2px}
+.crit-name{font-size:13px;font-weight:500;margin-bottom:3px;line-height:1.4}
+.crit-diss{font-size:11px;color:var(--t2);font-style:italic;margin-bottom:7px;line-height:1.5}
+.ev-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.ev-note{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px;background:var(--s2);font-size:11px;font-family:var(--fs);color:var(--t2);resize:vertical;min-height:44px;line-height:1.5;transition:border-color var(--tr)}
+.ev-note:focus{outline:none;border-color:var(--bd2);background:var(--s1)}
+.sbwrap{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;min-width:115px}
+.sbrow{display:flex;gap:3px}
+.sb{width:25px;height:25px;border-radius:5px;border:1px solid var(--bd2);background:var(--s1);color:var(--t2);cursor:pointer;font-size:11px;font-weight:600;font-family:var(--fs);transition:var(--tr);display:flex;align-items:center;justify-content:center}
+.sb:hover{background:var(--s2);border-color:var(--tx)}
+.sb.v1{background:#f9eaea;border-color:#b83232;color:#6b1818}
+.sb.v2{background:#fdf2e2;border-color:#b87a18;color:#5a3800}
+.sb.v3{background:#f0ede6;border-color:#8a8270;color:#3a3628}
+.sb.v4{background:#e4eef8;border-color:#1a5ea8;color:#0a2840}
+.sb.v5{background:#daf0e8;border-color:#0d6845;color:#042e1e}
+.sb-leg{font-size:9px;color:var(--t3);text-align:right}
+@media(prefers-color-scheme:dark){.sb.v1{background:#2e0f0f;border-color:#c03232;color:#f0a0a0}.sb.v2{background:#2e1a00;border-color:#c0820a;color:#f0c070}.sb.v3{background:#282420;border-color:#8a8270;color:#c8c4b8}.sb.v4{background:#0a1f38;border-color:#2471a3;color:#8ab8e8}.sb.v5{background:#042e1e;border-color:#0d8a5a;color:#80d0a8}}
+.leg{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:660px){.charts-row{grid-template-columns:1fr}}
+.chart-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:14px}
+.chart-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.cmp-wrap{border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
+.cmp-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.cmp-tbl th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--bd);font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--s1)}
+.cmp-tbl td{padding:0;border-bottom:1px solid var(--bd);vertical-align:top}
+.cmp-tbl tr:last-child td{border-bottom:none}
+.dname{padding:9px 12px;font-weight:600;font-size:12px;background:var(--s1)}
+.sctd{padding:9px 12px;vertical-align:middle;background:var(--s1)}
+.note-cell{padding:5px 12px 9px;border-top:1px dashed var(--bd)}
+.cmp-note{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px;background:var(--s2);font-size:11px;font-family:var(--fs);color:var(--t2);resize:vertical;min-height:48px;line-height:1.5;transition:border-color var(--tr)}
+.cmp-note:focus{outline:none;border-color:var(--bd2);background:var(--s1)}
+.pill{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px}
+.p-els{background:#deeaf8;color:#1a5ea8}.p-acl{background:#f5e6df;color:#8b3a1a}.p-dcu{background:#daf0e8;color:#0d6649}
+.tot-row td{background:var(--s2);font-weight:600}
+.hm-scroll{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r2)}
+.hm{border-collapse:collapse;width:100%;font-size:11px}
+.hm th{padding:7px 10px;border-bottom:2px solid var(--bd);background:var(--s1);font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;text-align:center}
+.hm th:first-child{text-align:left;min-width:220px}
+.hm td{padding:4px 8px;border-bottom:1px solid var(--bd);text-align:center;vertical-align:middle}
+.hm td:first-child{text-align:left;padding-left:12px;color:var(--t2)}
+.hm .grp td{background:var(--s2);font-weight:600;text-align:left;padding:6px 12px}
+.hm tr:last-child td{border-bottom:none}
+.h1{background:#f5d8d8;color:#6b1818}.h2{background:#fce8c8;color:#5a3800}.h3{background:#edeae2;color:#3a3628}.h4{background:#d8e8f5;color:#0a2840}.h5{background:#c8eada;color:#042e1e}.hn{background:var(--s2);color:var(--t3);font-size:10px}
+@media(prefers-color-scheme:dark){.h1{background:#2e0f0f;color:#f0a0a0}.h2{background:#2e1a00;color:#f0c070}.h3{background:#282420;color:#c8c4b8}.h4{background:#0a1f38;color:#8ab8e8}.h5{background:#042e1e;color:#80d0a8}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><div class="tb-title">Critical Design Framework Assessment</div><div class="tb-sub">Sensory Design, Autonomy &amp; Inclusion &nbsp;&middot;&nbsp; Desk-based instrument &nbsp;&middot;&nbsp; Three case studies</div></div>
+  <div class="tb-mid">
+    <button class="tab on" id="tab-score">Score</button>
+    <button class="tab" id="tab-compare">Compare</button>
+    <button class="tab" id="tab-heatmap">Heatmap</button>
+  </div>
+  <div class="tb-right">
+    <button class="abtn" id="btn-share">Share scores</button>
+    <button class="abtn pri" id="btn-save">Save &amp; download</button>
+    <span class="msg" id="msg"></span>
+  </div>
+</div>
+<div class="shell">
+  <div id="v-score" class="view on">
+    <div class="notice"><strong>Purpose.</strong> This instrument evaluates six dimensions central to the dissertation argument: framework evidence quality, sensory autonomy, greenhouse effect risk, inclusion versus enclave architecture, neuroinclusive breadth, and participatory design. Scores are derived from published evidence only. All notes are editable.</div>
+    <div class="case-row" id="case-row"></div>
+    <div class="prof-row" id="profile"></div>
+    <div id="dims"></div>
+  </div>
+  <div id="v-compare" class="view">
+    <div class="notice">Profiles reveal design philosophy rather than performance rankings. Analytical notes beneath each dimension are editable and saved with your file.</div>
+    <div class="leg" id="leg"></div>
+    <div class="charts-row">
+      <div class="chart-card"><div class="chart-lbl">Dimensional profiles</div><div style="position:relative;height:290px"><canvas id="radar"></canvas></div></div>
+      <div class="chart-card"><div class="chart-lbl">Section scores by case</div><div style="position:relative;height:290px"><canvas id="bar"></canvas></div></div>
+    </div>
+    <div class="cmp-wrap"><table class="cmp-tbl" id="cmp-tbl"></table></div>
+  </div>
+  <div id="v-heatmap" class="view">
+    <div class="notice">Full criterion-level view. Colour encodes score: <strong style="color:#b83232">1</strong> not met &rarr; <strong style="color:#b87a18">2</strong> partial &rarr; <strong>3</strong> minimum &rarr; <strong style="color:#1a5ea8">4</strong> good &rarr; <strong style="color:#0d6845">5</strong> exemplary.</div>
+    <div class="hm-scroll" id="hm-wrap"></div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DIMS=[
+{id:'D1',num:'01',title:'Framework Evidence and Evaluation Quality',arg:'How robust is the evidence base? Does evaluation allow conclusions to be trusted, or does it primarily confirm what designers intended?',col:'#2471a3',lt:'#e4eef8',criteria:[
+{id:'D1a',name:'A recognised design framework is explicitly applied and documented',diss:'Distinguishes grounded design from intuitive autism-friendly claims.'},
+{id:'D1b',name:'Evaluation is conducted independently of the original design team',diss:'When designers evaluate their own frameworks, results may confirm intent rather than reveal outcome.'},
+{id:'D1c',name:'Evidence extends beyond staff perception and behaviour management',diss:'Asks whether evidence reaches learning outcomes, wellbeing, or developmental progress.'},
+{id:'D1d',name:'The perspectives of building users are present in the evidence base',diss:'If the people the building is designed for do not appear in evaluation, evidence reflects professional intent.'},
+{id:'D1e',name:'Findings are published in peer-reviewed academic sources',diss:'Peer review is a minimum condition for evidence to be publicly testable and citable.'},
+]},
+{id:'D2',num:'02',title:'Sensory Autonomy and User Agency',arg:'Does the design give users control over their sensory environment, or manage it on their behalf? Self-regulation is the skill students need when they leave.',col:'#0d6649',lt:'#daf0e8',criteria:[
+{id:'D2a',name:'Users can access sensory regulation spaces without staff permission',diss:'Self-initiated access is a direct indicator of autonomy rather than institutionally mediated regulation.'},
+{id:'D2b',name:'Users have direct control over environmental settings',diss:'Adjustable systems requiring staff operation are not user control.'},
+{id:'D2c',name:'The design serves both sensory-avoidant and sensory-seeking users',diss:'A full-spectrum design addresses both hyper and hypo-sensitive profiles.'},
+{id:'D2d',name:'The environment supports development of coping skills rather than substituting for them',diss:'An environment that provides regulation may reduce current distress while limiting long-term coping capacity.'},
+{id:'D2e',name:'Daily sensory needs can be met without regular staff mediation',diss:'Tests whether the design reduces or structurally embeds dependence on adult intervention.'},
+]},
+{id:'D3',num:'03',title:'Greenhouse Effect and Transition Readiness',arg:'Does this environment prepare users for settings with less sensory control, or does high mitigation create dependency that makes transition harder?',col:'#7d3c00',lt:'#fdf0e0',criteria:[
+{id:'D3a',name:'The building offers a range of stimulation levels across its spaces',diss:'A single low-arousal register offers no scope for building tolerance incrementally.'},
+{id:'D3b',name:'Evidence examines whether gains made in the building transfer to other settings',diss:'No internal measurement alone supports claims about external preparation.'},
+{id:'D3c',name:'The design addresses users needs at the next stage of education or life',diss:'Buildings often optimise for present performance without designing for future transition.'},
+{id:'D3d',name:'The design documentation acknowledges the risk of dependency on controlled conditions',diss:'Acknowledged risk can be designed against. Unacknowledged risk cannot.'},
+{id:'D3e',name:'Users are exposed to some managed sensory challenge within the environment',diss:'Elimination of all challenge may not build the tolerance needed beyond the building.'},
+]},
+{id:'D4',num:'04',title:'Inclusion Architecture',arg:'Does the design enable participation in wider institutional life, or create a comfortable separate zone that substitutes for that participation?',col:'#6c3483',lt:'#f0e8f8',criteria:[
+{id:'D4a',name:'The design supports movement between specialist and shared spaces',diss:'A retreat that never becomes a scaffold raises questions about what it is preparing users for.'},
+{id:'D4b',name:'Monitoring and supervision arrangements respect user dignity and privacy',diss:'Safety design can conflict with dignity, particularly for older students.'},
+{id:'D4c',name:'Specialist provision is embedded within shared institutional life rather than physically separated',diss:'Physical separation makes the designation of difference visible and may limit social integration.'},
+{id:'D4d',name:'Neuroinclusive features appear in shared spaces as well as dedicated zones',diss:'If sensory-aware design is only in labelled specialist areas, benefits do not reach the wider institution.'},
+{id:'D4e',name:'The stated aim of the design is participation in the wider institution',diss:'Tests whether the design philosophy is outward-facing or centred on a protected space.'},
+]},
+{id:'D5',num:'05',title:'Neuroinclusive Breadth',arg:'Do the strategies here have value only for a specific diagnosed population, or could they benefit a wider range of users if adopted more broadly?',col:'#1a5276',lt:'#d6eaf8',criteria:[
+{id:'D5a',name:'The design rationale acknowledges benefit to users beyond the primary diagnostic group',diss:'Strategies framed as exclusive to one diagnosis are less likely to be adopted elsewhere.'},
+{id:'D5b',name:'The guiding framework addresses more than one neurodivergent condition',diss:'Tests whether an autism-specific or broader neuroinclusive framework governs the design.'},
+{id:'D5c',name:'Evidence or stated rationale includes benefit to neurotypical users',diss:'The claim that neuroinclusive design benefits everyone requires evidence or a developed rationale.'},
+{id:'D5d',name:'Core design strategies are achievable without specialist designation or exceptional budget',diss:'Replicability within standard resources is a condition of wider influence.'},
+{id:'D5e',name:'The approach is positioned as applicable to other institutions or settings',diss:'Affects whether the project contributes to changing mainstream practice.'},
+]},
+{id:'D6',num:'06',title:'Participatory Design and User Voice',arg:'Who shaped this environment? Were the people it was designed for present as contributors, or only as subjects of decisions made by others?',col:'#922b21',lt:'#fce8e6',criteria:[
+{id:'D6a',name:'The people who will use the building were involved in its design',diss:'Involvement of family or professional advocates is not equivalent to direct user participation.'},
+{id:'D6b',name:'Involvement went beyond feedback to active co-design',diss:'Consultation asks users what they think. Co-design asks them to contribute decisions.'},
+{id:'D6c',name:'User perspectives appear directly in the published evidence base',diss:'Evidence based entirely on staff surveys or therapist opinions does not capture user experience.'},
+{id:'D6d',name:'The guiding framework was itself shaped by user experience',diss:'The origin of the framework affects its logic and priorities.'},
+{id:'D6e',name:'A mechanism exists for ongoing user input after the building opens',diss:'Ongoing involvement creates a feedback loop allowing the building to improve over time.'},
+]},
+];
+const CASES={
+els:{id:'els',name:'Els for Autism Center of Excellence',short:'Els',loc:'Jupiter, Florida',year:'2018 (POE)',col:'#1a5ea8',lt:'#deeaf8',cls:'on-els',
+  context:'Purpose-built PreK to 8 specialist autism charter school extended to age 21. ASPECTSS formally applied via POE (Mostafa, 2018) and follow-up study (Mostafa et al., 2024).'},
+acland:{id:'acland',name:'Acland Burghley Autism Resource Centre',short:'Acland',loc:'London, UK',year:'2011',col:'#8b3a1a',lt:'#f5e6df',cls:'on-acl',
+  context:'Specialist resource base for up to 20 autistic pupils in a 1,265-pupil mainstream secondary school. Evidence from design documentation and therapist survey (Mentel and Bujniewicz, 2021).'},
+dcu:{id:'dcu',name:'Dublin City University',short:'DCU',loc:'Dublin, Ireland',year:'2021 (Guide)',col:'#0d6649',lt:'#daf0e8',cls:'on-dcu',
+  context:'World first designated Autism-Friendly University (AsIAm, 2018). ASPECTSS 2.0 Design Guide produced through co-design with autistic students (Mostafa, 2021).'},
+};
+const DEFAULTS = {
+  els:{
+    D1a:{s:null,n:''},
+    D1b:{s:null,n:''},
+    D1c:{s:null,n:''},
+    D1d:{s:null,n:''},
+    D1e:{s:null,n:''},
+    D2a:{s:null,n:''},
+    D2b:{s:null,n:''},
+    D2c:{s:null,n:''},
+    D2d:{s:null,n:''},
+    D2e:{s:null,n:''},
+    D3a:{s:null,n:''},
+    D3b:{s:null,n:''},
+    D3c:{s:null,n:''},
+    D3d:{s:null,n:''},
+    D3e:{s:null,n:''},
+    D4a:{s:null,n:''},
+    D4b:{s:null,n:''},
+    D4c:{s:null,n:''},
+    D4d:{s:null,n:''},
+    D4e:{s:null,n:''},
+    D5a:{s:null,n:''},
+    D5b:{s:null,n:''},
+    D5c:{s:null,n:''},
+    D5d:{s:null,n:''},
+    D5e:{s:null,n:''},
+    D6a:{s:null,n:''},
+    D6b:{s:null,n:''},
+    D6c:{s:null,n:''},
+    D6d:{s:null,n:''},
+    D6e:{s:null,n:''},
+  },
+  acland:{
+    D1a:{s:null,n:''},
+    D1b:{s:null,n:''},
+    D1c:{s:null,n:''},
+    D1d:{s:null,n:''},
+    D1e:{s:null,n:''},
+    D2a:{s:null,n:''},
+    D2b:{s:null,n:''},
+    D2c:{s:null,n:''},
+    D2d:{s:null,n:''},
+    D2e:{s:null,n:''},
+    D3a:{s:null,n:''},
+    D3b:{s:null,n:''},
+    D3c:{s:null,n:''},
+    D3d:{s:null,n:''},
+    D3e:{s:null,n:''},
+    D4a:{s:null,n:''},
+    D4b:{s:null,n:''},
+    D4c:{s:null,n:''},
+    D4d:{s:null,n:''},
+    D4e:{s:null,n:''},
+    D5a:{s:null,n:''},
+    D5b:{s:null,n:''},
+    D5c:{s:null,n:''},
+    D5d:{s:null,n:''},
+    D5e:{s:null,n:''},
+    D6a:{s:null,n:''},
+    D6b:{s:null,n:''},
+    D6c:{s:null,n:''},
+    D6d:{s:null,n:''},
+    D6e:{s:null,n:''},
+  },
+  dcu:{
+    D1a:{s:null,n:''},
+    D1b:{s:null,n:''},
+    D1c:{s:null,n:''},
+    D1d:{s:null,n:''},
+    D1e:{s:null,n:''},
+    D2a:{s:null,n:''},
+    D2b:{s:null,n:''},
+    D2c:{s:null,n:''},
+    D2d:{s:null,n:''},
+    D2e:{s:null,n:''},
+    D3a:{s:null,n:''},
+    D3b:{s:null,n:''},
+    D3c:{s:null,n:''},
+    D3d:{s:null,n:''},
+    D3e:{s:null,n:''},
+    D4a:{s:null,n:''},
+    D4b:{s:null,n:''},
+    D4c:{s:null,n:''},
+    D4d:{s:null,n:''},
+    D4e:{s:null,n:''},
+    D5a:{s:null,n:''},
+    D5b:{s:null,n:''},
+    D5c:{s:null,n:''},
+    D5d:{s:null,n:''},
+    D5e:{s:null,n:''},
+    D6a:{s:null,n:''},
+    D6b:{s:null,n:''},
+    D6c:{s:null,n:''},
+    D6d:{s:null,n:''},
+    D6e:{s:null,n:''},
+  },
+};
+const COMPARE_NOTE_DEFAULTS = {"D1": "", "D2": "", "D3": "", "D4": "", "D5": "", "D6": ""};
+
+var S = {cas:'els', open:{'D1':true}, sc:{}, nt:{}, dn:{}};
+
+(function init(){
+  var saved = null;
+  try{var h=location.hash;if(h&&h.indexOf('#s=')===0)saved=JSON.parse(decodeURIComponent(atob(h.slice(3))));}catch(e){}
+  if(window._SS) saved=window._SS;
+  Object.keys(CASES).forEach(function(cid){
+    S.sc[cid]={};S.nt[cid]={};
+    Object.keys(DEFAULTS[cid]).forEach(function(k){
+      S.sc[cid][k]=saved&&saved.sc&&saved.sc[cid]&&saved.sc[cid][k]!==undefined?saved.sc[cid][k]:DEFAULTS[cid][k].s;
+      S.nt[cid][k]=saved&&saved.nt&&saved.nt[cid]&&saved.nt[cid][k]!==undefined?saved.nt[cid][k]:DEFAULTS[cid][k].n;
+    });
+  });
+  Object.keys(COMPARE_NOTE_DEFAULTS).forEach(function(k){
+    S.dn[k]=saved&&saved.dn&&saved.dn[k]!==undefined?saved.dn[k]:COMPARE_NOTE_DEFAULTS[k];
+  });
+})();
+
+function dimSc(cid,did){
+  var crits=DIMS.find(function(d){return d.id===did;}).criteria;
+  var sum=0,n=0;
+  crits.forEach(function(c){var v=S.sc[cid][c.id];if(v){sum+=v;n++;}});
+  return n?{pct:sum/(n*5),sum:sum,n:n}:null;
+}
+function ovSc(cid){
+  var sum=0,n=0;
+  DIMS.forEach(function(d){d.criteria.forEach(function(c){var v=S.sc[cid][c.id];if(v){sum+=v;n++;}})});
+  return n?{pct:sum/(n*5),sum:sum,n:n}:null;
+}
+function pct(sc){return sc?Math.round(sc.pct*100)+'%':'—';}
+function bc(sc){if(!sc)return'#9a9288';if(sc.pct>=0.72)return'#0d6649';if(sc.pct>=0.52)return'#1a5ea8';if(sc.pct>=0.36)return'#b87a18';return'#b83232';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showMsg(m){var el=document.getElementById('msg');el.textContent=m;setTimeout(function(){el.textContent='';},2500);}
+
+// Nav
+function showView(v){
+  ['score','compare','heatmap'].forEach(function(id){
+    document.getElementById('v-'+id).classList.toggle('on',id===v);
+    document.getElementById('tab-'+id).classList.toggle('on',id===v);
+  });
+  if(v==='compare')renderCompare();
+  if(v==='heatmap')renderHeatmap();
+}
+document.getElementById('tab-score').addEventListener('click',function(){showView('score');});
+document.getElementById('tab-compare').addEventListener('click',function(){showView('compare');});
+document.getElementById('tab-heatmap').addEventListener('click',function(){showView('heatmap');});
+
+// Score view
+function renderScore(){
+  var cid=S.cas,C=CASES[cid];
+  // Case buttons
+  var cr=document.getElementById('case-row'),ch='';
+  Object.keys(CASES).forEach(function(k){
+    var c=CASES[k];
+    ch+='<button class="cbtn'+(k===cid?' '+c.cls:'')+'" data-cid="'+k+'">'+c.name+'<small>'+c.loc+' &middot; '+c.year+'</small></button>';
+  });
+  cr.innerHTML=ch;
+  cr.querySelectorAll('.cbtn').forEach(function(b){b.addEventListener('click',function(){S.cas=b.dataset.cid;renderScore();});});
+  // Profile
+  var pf=document.getElementById('profile'),ph='';
+  var ov=ovSc(cid);
+  ph='<div class="pc" style="border-left:3px solid '+C.col+'"><div class="pc-lbl">Overall</div><div class="pc-val" style="color:'+C.col+'">'+pct(ov)+'</div><div class="pc-track"><div class="pc-fill" style="width:'+(ov?Math.round(ov.pct*100):0)+'%;background:'+C.col+'"></div></div></div>';
+  DIMS.forEach(function(d){var sc=dimSc(cid,d.id),b=bc(sc);ph+='<div class="pc"><div class="pc-lbl">'+d.id+'</div><div class="pc-val" style="color:'+b+'">'+pct(sc)+'</div><div class="pc-track"><div class="pc-fill" style="width:'+(sc?Math.round(sc.pct*100):0)+'%;background:'+b+'"></div></div></div>';});
+  pf.innerHTML=ph;
+  // Dims
+  var dc=document.getElementById('dims'),dh='';
+  DIMS.forEach(function(d){
+    var sc=dimSc(cid,d.id),b=bc(sc),op=S.open[d.id];
+    dh+='<div class="dim"><div class="dim-hdr" data-did="'+d.id+'">'
+      +'<div class="dim-hdr-l"><div class="badge" style="background:'+d.lt+';color:'+d.col+'">'+d.num+'</div>'
+      +'<div><div class="dim-ttl">'+d.title+'</div><div class="dim-arg">'+d.arg+'</div></div></div>'
+      +'<div class="dim-hdr-r"><div class="dtrack"><div class="dfill" style="width:'+(sc?Math.round(sc.pct*100):0)+'%;background:'+b+'"></div></div>'
+      +'<div class="dim-pct" style="color:'+b+'">'+pct(sc)+'</div>'
+      +'<span class="chev'+(op?' op':'')+'">&#9660;</span></div></div>'
+      +'<div class="dim-body'+(op?' op':'')+'" data-did="'+d.id+'">'+renderCrits(cid,d)+'</div></div>';
+  });
+  dc.innerHTML=dh;
+  dc.querySelectorAll('.dim-hdr').forEach(function(h){h.addEventListener('click',function(){var did=h.dataset.did;S.open[did]=!S.open[did];renderScore();});});
+  dc.querySelectorAll('.sb').forEach(function(b){b.addEventListener('click',function(){S.sc[b.dataset.cid][b.dataset.crit]=parseInt(b.dataset.val);renderScore();});});
+  dc.querySelectorAll('.ev-note').forEach(function(ta){ta.addEventListener('input',function(){S.nt[ta.dataset.cid][ta.dataset.crit]=ta.value;});});
+}
+
+function renderCrits(cid,d){
+  var h='';
+  d.criteria.forEach(function(c){
+    var sc=S.sc[cid][c.id],note=S.nt[cid][c.id]||'';
+    var btns='';
+    for(var v=1;v<=5;v++){btns+='<button class="sb'+(sc===v?' v'+v:'')+'" data-cid="'+cid+'" data-crit="'+c.id+'" data-val="'+v+'">'+v+'</button>';}
+    h+='<div class="crit"><div>'
+      +'<div class="crit-id">'+c.id+'</div>'
+      +'<div class="crit-name">'+c.name+'</div>'
+      +'<div class="crit-diss">'+c.diss+'</div>'
+      +'<div class="ev-lbl">Evidence &amp; note</div>'
+      +'<textarea class="ev-note" data-cid="'+cid+'" data-crit="'+c.id+'">'+esc(note)+'</textarea>'
+      +'</div><div class="sbwrap"><div class="sbrow">'+btns+'</div><div class="sb-leg">1 not met &rarr; 5 exemplary</div></div></div>';
+  });
+  return h;
+}
+
+// Compare view
+var rC=null,bC=null;
+function renderCompare(){
+  var cl=Object.values(CASES);
+  document.getElementById('leg').innerHTML=cl.map(function(c){return'<div class="leg-item"><div class="leg-dot" style="background:'+c.col+'"></div>'+c.short+'</div>';}).join('');
+  if(rC)rC.destroy();
+  rC=new Chart(document.getElementById('radar'),{type:'radar',
+    data:{labels:DIMS.map(function(d){return d.title;}),
+      datasets:cl.map(function(c){return{label:c.short,data:DIMS.map(function(d){var s=dimSc(c.id,d.id);return s?Math.round(s.pct*100):0;}),borderColor:c.col,backgroundColor:c.col+'15',borderWidth:2,pointRadius:4,pointBackgroundColor:c.col};})
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:9},color:'#9a9288',backdropColor:'transparent'},pointLabels:{font:{size:10},color:'#5c5850'},grid:{color:'rgba(150,140,130,.2)'},angleLines:{color:'rgba(150,140,130,.2)'}}},
+      plugins:{legend:{display:false}}}
+  });
+  if(bC)bC.destroy();
+  bC=new Chart(document.getElementById('bar'),{type:'bar',
+    data:{labels:DIMS.map(function(d){return d.num;}),
+      datasets:cl.map(function(c){return{label:c.short,data:DIMS.map(function(d){var s=dimSc(c.id,d.id);return s?Math.round(s.pct*100):0;}),backgroundColor:c.col+'b0',borderColor:c.col,borderWidth:1,borderRadius:3};})
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:0,max:100,ticks:{stepSize:25,font:{size:10},callback:function(v){return v+'%';},color:'#9a9288'},grid:{color:'rgba(150,140,130,.15)'}},x:{ticks:{font:{size:11},color:'#5c5850'},grid:{display:false}}},
+      plugins:{legend:{display:false}}}
+  });
+  var pc=['p-els','p-acl','p-dcu'];
+  var th='<thead><tr><th>Dimension</th>'+cl.map(function(c){return'<th style="color:'+c.col+'">'+c.short+'</th>';}).join('')+'</tr></thead><tbody>';
+  DIMS.forEach(function(d){
+    var sc=cl.map(function(c){return dimSc(c.id,d.id);});
+    var note=S.dn[d.id]||'';
+    th+='<tr>'+
+      '<td class="dname">'+d.id+' &mdash; '+d.title+'</td>'+
+      sc.map(function(s,i){return'<td class="sctd"><span class="pill '+pc[i]+'">'+pct(s)+'</span></td>';}).join('')+
+      '</tr><tr><td colspan="'+(cl.length+1)+'" class="note-cell">'+
+      '<textarea class="cmp-note" data-dim="'+d.id+'">'+esc(note)+'</textarea>'+
+      '</td></tr>';
+  });
+  th+='<tr class="tot-row"><td style="padding:9px 12px">Overall</td>'+cl.map(function(c,i){var o=ovSc(c.id);return'<td class="sctd"><span class="pill '+pc[i]+'">'+pct(o)+'</span></td>';}).join('')+'</tr></tbody>';
+  document.getElementById('cmp-tbl').innerHTML=th;
+  document.querySelectorAll('.cmp-note').forEach(function(ta){ta.addEventListener('input',function(){S.dn[ta.dataset.dim]=ta.value;});});
+}
+
+// Heatmap
+function renderHeatmap(){
+  var cl=Object.values(CASES);
+  var hc=['','h1','h2','h3','h4','h5'];
+  var h='<table class="hm"><thead><tr><th>Criterion</th>'+cl.map(function(c){return'<th style="color:'+c.col+'">'+c.short+'</th>';}).join('')+'</tr></thead><tbody>';
+  DIMS.forEach(function(d){
+    h+='<tr class="grp"><td colspan="'+(cl.length+1)+'">'+d.num+' &mdash; '+d.title+'</td></tr>';
+    d.criteria.forEach(function(c){
+      h+='<tr><td>'+c.id+'&nbsp; '+c.name+'</td>'+cl.map(function(cas){var s=S.sc[cas.id][c.id];return s?'<td class="'+hc[s]+'">'+s+'</td>':'<td class="hn">—</td>';}).join('')+'</tr>';
+    });
+  });
+  h+='</tbody></table>';
+  document.getElementById('hm-wrap').innerHTML=h;
+}
+
+// Save & share
+document.getElementById('btn-save').addEventListener('click',function(){
+  var payload={sc:S.sc,nt:S.nt,dn:S.dn};
+  var inj='<script>window._SS='+JSON.stringify(payload)+';<\/script>';
+  var src='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  src=src.replace('<\/head>',inj+'<\/head>');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([src],{type:'text/html'}));
+  a.download='critical_assessment_saved.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  showMsg('Saved');
+});
+document.getElementById('btn-share').addEventListener('click',function(){
+  try{
+    var p={sc:S.sc,dn:S.dn};
+    var url=location.href.split('#')[0]+'#s='+btoa(encodeURIComponent(JSON.stringify(p)));
+    navigator.clipboard.writeText(url).then(function(){showMsg('Link copied');});
+  }catch(e){showMsg('Could not copy link');}
+});
+
+renderScore();
+</script>
+</body>
+</html>
